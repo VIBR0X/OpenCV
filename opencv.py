@@ -1,19 +1,24 @@
 import cv2 as cv
+import cvzone
+from cvzone.ColorModule import ColorFinder 
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import torchvision as transform
 
 
-#vid = cv.VideoCapture(0)
+
 
 #### importing and reading image
+
 # img = cv.imread("Asus.jpg")
 # cv.imshow('A', img)
 # cv.waitKey(0)
 
+
+
 #### Using webcam
-  
+#vid = cv.VideoCapture(0)
 # while(True):
 #     ret, frame = vid.read()
   
@@ -24,6 +29,9 @@ import torchvision as transform
 
 # vid.release()
 # cv.destroyAllWindows()
+
+
+
 
 #### image transform
 
@@ -36,6 +44,9 @@ import torchvision as transform
 # canny = cv.Canny(img1, 100, 200)
 # cv.imshow('canny', canny)
 # cv.waitKey(0)
+
+
+
 
 
 #### Detecting Shapes
@@ -98,35 +109,41 @@ import torchvision as transform
 # cv.destroyAllWindows()
 
 
+
+
+
 #### Detecting Ball in the video
-vid = cv.VideoCapture('messi.mp4')
-prevc = None
-dist = lambda x1,y1,x2,y2: (x1-x2)**2+(y1-y2)**2
-while(True):
-    ret, frame = vid.read()
-    grey = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    blur = cv.GaussianBlur(grey, (17,17), cv.BORDER_DEFAULT)
-    circle = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1.3, 1000, param1=100, param2=40)
+# vid = cv.VideoCapture('messi.mp4')
+# prevc = None
+# dist = lambda x1,y1,x2,y2: ((x1-x2)**2+(y1-y2)**2)**0.5
+# while(True):
+#     ret, frame = vid.read()
+#     grey = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+#     blur = cv.GaussianBlur(grey, (17,17), cv.BORDER_DEFAULT)
+#     circle = cv.HoughCircles(blur, cv.HOUGH_GRADIENT, 1.3, 1000, param1=100, param2=40)
 
-    if circle is not None:
-        circle = np.uint16(np.around(circle))
-        sel = None
-        for i in circle[0,:]:
-            if sel is None: sel = i
-            if prevc is not None:
-                if dist(sel[0],sel[1],prevc[0],prevc[1]) <= dist(i[0],i[1],prevc[0],prevc[1]):
-                    sel = i
-        cv.circle(frame, (sel[0],sel[1]), 2, (100,0,100), 2 )
-        cv.circle(frame, (sel[0],sel[1]), sel[2], (255,0,0), 4 )
-        prevc = sel
+#     if circle is not None:
+#         circle = np.uint16(np.around(circle))
+#         sel = None
+#         for i in circle[0,:]:
+#             if sel is None: sel = i
+#             if prevc is not None:
+#                 if dist(sel[0],sel[1],prevc[0],prevc[1]) <= dist(i[0],i[1],prevc[0],prevc[1]):
+#                     sel = i
+#         cv.circle(frame, (sel[0],sel[1]), 2, (100,0,100), 2 )
+#         cv.circle(frame, (sel[0],sel[1]), sel[2], (255,0,0), 4 )
+#         prevc = sel
   
-    cv.imshow('frame', frame)
+#     cv.imshow('frame', frame)
 
-    if cv.waitKey(60) & 0xFF == ord('q'):
-        break
+#     if cv.waitKey(600) & 0xFF == ord('q'):
+#         break
 
-vid.release()
-cv.destroyAllWindows()
+# vid.release()
+# cv.destroyAllWindows()
+
+
+
 
 
 #### Detecting blue in video
@@ -149,3 +166,37 @@ cv.destroyAllWindows()
 #     if cv.waitKey(1) & 0xFF == ord('q'):
 #       break
 # cv.destroyAllWindows()
+
+
+
+#### Detecting Ball in the video using color
+
+vid = cv.VideoCapture('video.mp4')
+colorf = ColorFinder(False)
+
+hsvVal = {'hmin': 23, 'smin': 72, 'vmin': 204, 'hmax': 47, 'smax': 255, 'vmax': 255}
+
+while(True):
+    ret, frame = vid.read()
+
+    # img = cv.imread('ball.png')
+    # cv.imshow('img', img)
+
+    # imgcol,mask = colorf.update(img, hsvVal)
+    # cv.imshow('imgcol', imgcol)
+
+    # grey = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    # blur = cv.GaussianBlur(grey, (17,17), cv.BORDER_DEFAULT)
+
+    imgcol,mask = colorf.update(frame, hsvVal)  
+
+    imgcontours, contours = cvzone.findContours(frame,mask, minArea=200)
+    cv.imshow('frame', imgcontours)
+    #cv.imshow('frame2', frame)
+
+    if cv.waitKey(60) & 0xFF == ord('q'):
+        break
+
+vid.release()
+cv.destroyAllWindows()
+
